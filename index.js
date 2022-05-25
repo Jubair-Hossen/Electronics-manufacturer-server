@@ -69,6 +69,26 @@ async function run() {
             res.send(users)
         })
 
+        // make admin api
+        app.put('/makeadmin/:email', verifyJwt, async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email }
+            const updateDoc = {
+                $set: { role: 'admin' }
+            }
+
+            const requester = req.decoded.email;
+            const requesterAcc = await usersCollection.findOne({ email: requester })
+
+            if (requesterAcc.role === 'admin') {
+                const result = await usersCollection.updateOne(filter, updateDoc)
+                res.send(result);
+            }
+            else {
+                return res.status(403).send({ message: 'Forviden access' })
+            }
+        })
+
     }
     finally {
 
