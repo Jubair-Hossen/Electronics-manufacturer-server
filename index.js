@@ -33,6 +33,7 @@ async function run() {
     try {
         await client.connect();
         const produtcsCollection = client.db('radon-electronics').collection('Products');
+        const usersCollection = client.db('radon-electronics').collection('users');
 
         // add product api
         app.post('/product', async (req, res) => {
@@ -46,6 +47,20 @@ async function run() {
         app.get('/products', async (req, res) => {
             const product = await produtcsCollection.find().toArray();
             res.send(product);
+        })
+
+        // create user api
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc, options);
+            const token = jwt.sign(user, process.env.ACCESS_SECRET, { expiresIn: '1h' });
+            res.send({ result, token });
         })
 
     }
