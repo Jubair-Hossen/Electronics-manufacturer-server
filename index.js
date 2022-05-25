@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -33,6 +33,7 @@ async function run() {
     try {
         await client.connect();
         const produtcsCollection = client.db('radon-electronics').collection('Products');
+        const ordersCollection = client.db('radon-electronics').collection('Orders');
         const usersCollection = client.db('radon-electronics').collection('users');
 
         // add product api
@@ -47,6 +48,14 @@ async function run() {
         app.get('/products', async (req, res) => {
             const product = await produtcsCollection.find().toArray();
             res.send(product);
+        })
+
+        // get Products by id
+        app.get('/productbyid/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const product = await produtcsCollection.findOne(query);
+            res.send(product)
         })
 
         // create user api
@@ -88,6 +97,34 @@ async function run() {
                 return res.status(403).send({ message: 'Forviden access' })
             }
         })
+
+        // check isAdmin api
+        app.get('/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = await usersCollection.findOne({ email: email });
+            const isAdmin = user.role === 'admin';
+            res.send({ admin: isAdmin })
+        })
+
+        // add order api
+        app.post('/order', async (req, res) => {
+            const order = req.body;
+            const id = order.productId;
+            const query = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const orderedProduct = await produtcsCollection.findOne(query);
+            const newQuantity = orderedProduct.quantity - order.orderQuantity;
+            const updateQuantity = {
+                $set: {
+                    quantity: newQuantity
+                },
+            };
+
+            const result = await ordersCollection.insertOne(order);
+            const update = await produtcsCollection.updateOne(query, updateQuantity, options)
+            res.send(result);
+        })
+
 
     }
     finally {
