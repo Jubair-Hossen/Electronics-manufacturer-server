@@ -63,6 +63,12 @@ async function run() {
             res.send({ result, token });
         })
 
+        // get All Users api
+        app.get('/users', verifyJwt, async (req, res) => {
+            const users = await usersCollection.find().toArray();
+            res.send(users)
+        })
+
     }
     finally {
 
