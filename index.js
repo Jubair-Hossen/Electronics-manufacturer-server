@@ -63,11 +63,10 @@ async function run() {
             const email = req.params.email;
             const user = req.body;
             const filter = { email: email };
-            const options = { upsert: true };
             const updateDoc = {
                 $set: user,
             };
-            const result = await usersCollection.updateOne(filter, updateDoc, options);
+            const result = await usersCollection.updateOne(filter, updateDoc);
             const token = jwt.sign(user, process.env.ACCESS_SECRET, { expiresIn: '1h' });
             res.send({ result, token });
         })
@@ -141,6 +140,26 @@ async function run() {
             res.send(result);
         })
 
+        // get user by email
+        app.get('/userbyemail', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            res.send(user)
+        })
+
+        // update Profile api
+        app.put('/updateprofile/:email', async (req, res) => {
+            const email = req.params.email;
+            const newProfile = req.body;
+            const filter = { email: email };
+            const updateProfile = {
+                $set: newProfile,
+            }
+            const result = await usersCollection.updateOne(filter, updateProfile);
+            res.send(result);
+
+        })
 
     }
     finally {
