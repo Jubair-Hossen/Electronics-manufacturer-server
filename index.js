@@ -41,6 +41,13 @@ async function run() {
             res.send(result)
         })
 
+
+        // get all products api
+        app.get('/products', async (req, res) => {
+            const product = await produtcsCollection.find().toArray();
+            res.send(product);
+        })
+
     }
     finally {
 
