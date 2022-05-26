@@ -59,6 +59,14 @@ async function run() {
             res.send(product)
         })
 
+        // delete product by admin api
+        app.delete('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await produtcsCollection.deleteOne(query);
+            res.send(result);
+        })
+
         // create user api
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
