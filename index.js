@@ -38,7 +38,7 @@ async function run() {
         const reviewsCollection = client.db('radon-electronics').collection('reviews');
 
         // add product api
-        app.post('/product', async (req, res) => {
+        app.post('/product', verifyJwt, async (req, res) => {
             const product = req.body;
             const result = await produtcsCollection.insertOne(product);
             res.send(result)
@@ -46,13 +46,13 @@ async function run() {
 
 
         // get all products api
-        app.get('/products', async (req, res) => {
+        app.get('/products', verifyJwt, async (req, res) => {
             const product = await produtcsCollection.find().toArray();
             res.send(product);
         })
 
         // get Products by id
-        app.get('/productbyid/:id', async (req, res) => {
+        app.get('/productbyid/:id', verifyJwt, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const product = await produtcsCollection.findOne(query);
@@ -60,7 +60,7 @@ async function run() {
         })
 
         // delete product by admin api
-        app.delete('/product/:id', async (req, res) => {
+        app.delete('/product/:id', verifyJwt, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await produtcsCollection.deleteOne(query);
@@ -77,7 +77,7 @@ async function run() {
                 $set: user,
             };
             const result = await usersCollection.updateOne(filter, updateDoc, options);
-            const token = jwt.sign(user, process.env.ACCESS_SECRET, { expiresIn: '1h' });
+            const token = jwt.sign(user, process.env.ACCESS_SECRET, { expiresIn: '1d' });
             res.send({ result, token });
         })
 
@@ -135,7 +135,7 @@ async function run() {
         })
 
         // get my orders
-        app.get('/myorders', async (req, res) => {
+        app.get('/myorders', verifyJwt, async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
             const orders = await ordersCollection.find(query).toArray();
