@@ -35,6 +35,7 @@ async function run() {
         const produtcsCollection = client.db('radon-electronics').collection('Products');
         const ordersCollection = client.db('radon-electronics').collection('Orders');
         const usersCollection = client.db('radon-electronics').collection('users');
+        const reviewsCollection = client.db('radon-electronics').collection('reviews');
 
         // add product api
         app.post('/product', async (req, res) => {
@@ -63,10 +64,11 @@ async function run() {
             const email = req.params.email;
             const user = req.body;
             const filter = { email: email };
+            options = { upsert: true }
             const updateDoc = {
                 $set: user,
             };
-            const result = await usersCollection.updateOne(filter, updateDoc);
+            const result = await usersCollection.updateOne(filter, updateDoc, options);
             const token = jwt.sign(user, process.env.ACCESS_SECRET, { expiresIn: '1h' });
             res.send({ result, token });
         })
@@ -159,6 +161,30 @@ async function run() {
             const result = await usersCollection.updateOne(filter, updateProfile);
             res.send(result);
 
+        })
+
+        // add review api
+        app.post('/addreview', async (req, res) => {
+            const review = req.body;
+            const email = review.email;
+            const query = { email: email };
+            const axist = await reviewsCollection.findOne(query);
+            if (axist) {
+                return res.send({ success: false })
+            }
+            const result = await reviewsCollection.insertOne(review);
+            res.send(result);
+        })
+
+        // get all reviews
+        app.get('/reviews', async (req, res) => {
+            const reviews = await reviewsCollection.find().toArray();
+            const users = await usersCollection.find().toArray();
+            reviews.forEach(review => {
+                const profile = users.find(user => user.email === review.email);
+                review.img = profile.profilePic;
+            })
+            res.send(reviews);
         })
 
     }
