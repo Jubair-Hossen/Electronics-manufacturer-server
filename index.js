@@ -46,7 +46,7 @@ async function run() {
 
 
         // get all products api
-        app.get('/products', verifyJwt, async (req, res) => {
+        app.get('/products', async (req, res) => {
             const product = await produtcsCollection.find().toArray();
             res.send(product);
         })
@@ -161,6 +161,17 @@ async function run() {
             const options = { upsert: true }
             const updateDoc = {
                 $set: { status: 'shipped' }
+            }
+            const result = await ordersCollection.updateOne(query, updateDoc, options);
+            res.send(result);
+        })
+        // payment api
+        app.put('/payment/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: { status: 'pending' }
             }
             const result = await ordersCollection.updateOne(query, updateDoc, options);
             res.send(result);
