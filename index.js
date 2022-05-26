@@ -165,7 +165,7 @@ async function run() {
             const result = await ordersCollection.updateOne(query, updateDoc, options);
             res.send(result);
         })
-        // payment api
+        // payment api(change order status to pendind)
         app.put('/payment/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
