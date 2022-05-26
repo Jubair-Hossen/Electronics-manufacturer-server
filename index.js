@@ -141,12 +141,28 @@ async function run() {
             const orders = await ordersCollection.find(query).toArray();
             res.send(orders)
         })
+        // get all orders
+        app.get('/allorders', async (req, res) => {
+            const orders = await ordersCollection.find().toArray();
+            res.send(orders)
+        })
 
         // Cancel order api
         app.delete('/order/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await ordersCollection.deleteOne(query);
+            res.send(result);
+        })
+        // Change order status api
+        app.put('/changestatus/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: { status: 'shipped' }
+            }
+            const result = await ordersCollection.updateOne(query, updateDoc, options);
             res.send(result);
         })
 
