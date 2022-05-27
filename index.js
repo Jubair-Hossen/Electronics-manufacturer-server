@@ -7,8 +7,15 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(cors());
 app.use(express.json());
+
+app.use(
+    cors({
+        origin: true,
+        optionsSuccessStatus: 200,
+        credentials: true,
+    })
+);
 
 
 function verifyJwt(req, res, next) {
